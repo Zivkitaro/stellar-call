@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stellar Concordat — Planetary Atlas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+  :root {
+    --gold:#c8a45a;--gold-dim:#8a6d38;--gold-bright:#e8c87a;
+    --bg-deep:#0a0c0f;--bg-card:#0f1218;--bg-row:#12151c;--bg-row-alt:#0d1016;
+    --text:#d4c4a0;--text-dim:#7a6e5a;--border:rgba(200,164,90,0.18);--border-strong:rgba(200,164,90,0.45);
+    --core:#4a7fc1;--core-dim:rgba(74,127,193,0.15);--core-border:rgba(74,127,193,0.5);
+    --stable:#5a9e6f;--stable-dim:rgba(90,158,111,0.15);--stable-border:rgba(90,158,111,0.5);
+    --deep:#b87a35;--deep-dim:rgba(184,122,53,0.15);--deep-border:rgba(184,122,53,0.5);
+    --lawless:#b84040;--lawless-dim:rgba(184,64,64,0.15);--lawless-border:rgba(184,64,64,0.5);
+    --beyond:#7a5ab8;--beyond-dim:rgba(122,90,184,0.15);--beyond-border:rgba(122,90,184,0.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg-deep);color:var(--text);font-family:'Crimson Pro',Georgia,serif;font-size:15px;line-height:1.5;min-height:100vh;}
+  .page-wrap{max-width:1380px;margin:0 auto;padding:48px 28px 72px;}
+  .atlas-header{text-align:center;margin-bottom:52px;}
+  .atlas-header::before,.atlas-header::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),var(--gold),var(--gold-dim),transparent);margin:16px 0;}
+  .atlas-title{font-family:'Cinzel',serif;font-size:28px;font-weight:700;letter-spacing:0.12em;color:var(--gold-bright);text-transform:uppercase;margin-bottom:4px;}
+  .atlas-subtitle{font-family:'Cinzel',serif;font-size:12px;font-weight:400;letter-spacing:0.22em;color:var(--gold-dim);text-transform:uppercase;}
+  .atlas-year{font-size:13px;color:var(--text-dim);font-style:italic;margin-top:8px;}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 24px;margin-bottom:20px;padding:16px 20px;border:1px solid var(--border);background:var(--bg-card);}
+  .legend-title{width:100%;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:4px;}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim);}
+  .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .dot-core{background:var(--core);}.dot-stable{background:var(--stable);}.dot-deep{background:var(--deep);}
+  .dot-lawless{background:var(--lawless);}.dot-beyond{background:var(--beyond);}
+  .legend2{display:flex;flex-wrap:wrap;gap:6px 20px;margin-bottom:36px;padding:14px 20px;border:1px solid var(--border);background:var(--bg-card);}
+  .legend2-title{width:100%;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:4px;}
+  .jp-sample{font-family:'Cinzel',serif;font-size:11px;padding:2px 7px;border-radius:2px;border:1px solid;}
+  .jp-beacon{background:rgba(200,164,90,0.15);color:var(--gold);border-color:rgba(200,164,90,0.5);}
+  .jp-trade{background:rgba(90,158,111,0.12);color:#80cc98;border-color:rgba(90,158,111,0.4);}
+  .jp-coord{background:rgba(100,120,160,0.12);color:#8aaecc;border-color:rgba(100,120,160,0.35);}
+  .jp-none{background:rgba(184,64,64,0.12);color:#cc7070;border-color:rgba(184,64,64,0.35);}
+  .jp-mil{background:rgba(122,90,184,0.12);color:#b090e0;border-color:rgba(122,90,184,0.4);}
+  .jp-dark{background:rgba(60,60,60,0.2);color:#606060;border-color:rgba(80,80,80,0.4);}
+  .zone-section{margin-bottom:40px;}
+  .zone-header{display:flex;align-items:center;gap:14px;margin-bottom:2px;padding:12px 20px 10px;}
+  .zone-header.core{background:var(--core-dim);border-left:3px solid var(--core);border-top:1px solid var(--core-border);}
+  .zone-header.stable{background:var(--stable-dim);border-left:3px solid var(--stable);border-top:1px solid var(--stable-border);}
+  .zone-header.deep{background:var(--deep-dim);border-left:3px solid var(--deep);border-top:1px solid var(--deep-border);}
+  .zone-header.lawless{background:var(--lawless-dim);border-left:3px solid var(--lawless);border-top:1px solid var(--lawless-border);}
+  .zone-header.beyond{background:var(--beyond-dim);border-left:3px solid var(--beyond);border-top:1px solid var(--beyond-border);}
+  .zone-name{font-family:'Cinzel',serif;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;}
+  .zone-name.core{color:var(--core);}.zone-name.stable{color:var(--stable);}.zone-name.deep{color:var(--deep);}
+  .zone-name.lawless{color:var(--lawless);}.zone-name.beyond{color:var(--beyond);}
+  .zone-count{font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim);letter-spacing:0.1em;margin-left:8px;}
+  .zone-desc{font-size:13px;font-style:italic;color:var(--text-dim);margin-left:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead tr{border-bottom:1px solid var(--border-strong);}
+  thead th{font-family:'Cinzel',serif;font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-dim);padding:10px 12px;text-align:left;white-space:nowrap;background:var(--bg-card);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s;}
+  tbody tr:nth-child(even){background:var(--bg-row-alt);}
+  tbody tr:nth-child(odd){background:var(--bg-row);}
+  tbody tr:hover{background:rgba(200,164,90,0.05);}
+  td{padding:8px 12px;vertical-align:top;}
+  td.name{font-weight:400;white-space:nowrap;font-size:14px;color:#e0d4b4;}
+  td.name em{display:block;font-style:italic;font-size:11.5px;color:var(--text-dim);font-weight:300;margin-top:1px;}
+  td.type span{display:inline-block;padding:2px 7px;font-size:10.5px;font-family:'Cinzel',serif;letter-spacing:0.06em;border-radius:2px;white-space:nowrap;}
+  .badge-planet{background:rgba(74,127,193,0.2);color:#7aaee0;border:1px solid rgba(74,127,193,0.4);}
+  .badge-moon{background:rgba(100,90,130,0.2);color:#b0a0e0;border:1px solid rgba(100,90,130,0.4);}
+  .badge-station{background:rgba(90,158,111,0.2);color:#80cc98;border:1px solid rgba(90,158,111,0.4);}
+  .badge-system{background:rgba(184,122,53,0.2);color:#e0a060;border:1px solid rgba(184,122,53,0.4);}
+  .badge-asteroid{background:rgba(100,80,60,0.2);color:#c09878;border:1px solid rgba(100,80,60,0.4);}
+  .badge-nomadic{background:rgba(122,90,184,0.2);color:#b090e0;border:1px solid rgba(122,90,184,0.4);}
+  .badge-ruin{background:rgba(160,60,60,0.2);color:#e08080;border:1px solid rgba(160,60,60,0.4);}
+  .badge-derelict{background:rgba(80,80,80,0.25);color:#a0a0a0;border:1px solid rgba(100,100,100,0.4);}
+  .badge-region{background:rgba(184,122,53,0.15);color:#c89050;border:1px solid rgba(184,122,53,0.3);}
+  td.jp{white-space:nowrap;}
+  .jp-code{display:inline-block;font-family:'Cinzel',serif;font-size:11px;padding:2px 7px;border-radius:2px;border:1px solid;white-space:nowrap;}
+  td.faction{font-size:12px;color:var(--text-dim);white-space:nowrap;}
+  td.notes{font-size:13px;color:var(--text-dim);min-width:260px;}
+  td.notes strong{color:var(--text);font-weight:400;}
+  .status-visited{color:#c8a45a;font-size:12px;}
+  .status-prep{color:#5a9e6f;font-size:12px;}
+  .status-lore{color:#7a6e5a;font-size:12px;}
+  .status-hook{color:#b87a35;font-size:12px;}
+  .status-destroyed{color:#b84040;font-size:12px;}
+  .species-cell{font-size:12px;color:#b090e0;font-style:italic;}
+  .footnotes{margin-top:36px;padding:16px 20px;border:1px solid var(--border);background:var(--bg-card);}
+  .footnotes p{font-size:12px;color:var(--text-dim);margin-bottom:4px;font-style:italic;}
+  .footnotes p:last-child{margin-bottom:0;}
+  .footnotes strong{font-style:normal;color:var(--gold-dim);font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border-strong),transparent);margin:8px 0;}
+  /* ZONE BAND for quick-add table */
+  .zband-core{border-left:3px solid var(--core);}
+  .zband-stable{border-left:3px solid var(--stable);}
+  .zband-deep{border-left:3px solid var(--deep);}
+  .zband-lawless{border-left:3px solid var(--lawless);}
+  .zband-beyond{border-left:3px solid var(--beyond);}
+  .zone-pill{display:inline-block;font-family:'Cinzel',serif;font-size:9px;padding:1px 6px;border-radius:2px;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;}
+  .pill-core{background:var(--core-dim);color:var(--core);border:1px solid var(--core-border);}
+  .pill-stable{background:var(--stable-dim);color:var(--stable);border:1px solid var(--stable-border);}
+  .pill-deep{background:var(--deep-dim);color:var(--deep);border:1px solid var(--deep-border);}
+  .pill-lawless{background:var(--lawless-dim);color:var(--lawless);border:1px solid var(--lawless-border);}
+  .pill-beyond{background:var(--beyond-dim);color:var(--beyond);border:1px solid var(--beyond-border);}
+  .add-header{display:flex;align-items:center;gap:14px;margin-bottom:2px;padding:12px 20px 10px;background:rgba(200,164,90,0.07);border-left:3px solid var(--gold);border-top:1px solid var(--border-strong);}
+  .add-title{font-family:'Cinzel',serif;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);}
+  .add-desc{font-size:13px;font-style:italic;color:var(--text-dim);margin-left:auto;}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<div class="atlas-header">
+  <div class="atlas-title">Stellar Concordat — Planetary Atlas</div>
+  <div class="atlas-subtitle">Known Worlds, Stations &amp; Territories — GM Reference</div>
+  <div class="atlas-year">Standard Galactic Year 4892 &nbsp;·&nbsp; Black Dahlia Campaign</div>
+</div>
+
+<!-- ZONE LEGEND -->
+<div class="legend">
+  <div class="legend-title">Zone Classification</div>
+  <div class="legend-item"><div class="legend-dot dot-core"></div>Core Worlds — ancient, stable, rule of law</div>
+  <div class="legend-item"><div class="legend-dot dot-stable"></div>Stable Frontier — established, some law</div>
+  <div class="legend-item"><div class="legend-dot dot-deep"></div>Deep Frontier — sparse law, corporate-held</div>
+  <div class="legend-item"><div class="legend-dot dot-lawless"></div>Lawless Space — Concordat authority on paper only</div>
+  <div class="legend-item"><div class="legend-dot dot-beyond"></div>Beyond Concordat — non-member civilizations</div>
+</div>
+
+<!-- JUMP POINT LEGEND -->
+<div class="legend2">
+  <div class="legend2-title">Jump Point Classification</div>
+  <div class="legend-item"><span class="jp-code jp-beacon">NH-B1</span>&nbsp; Harmonium Beacon — major system, ₢500/access, official nav data</div>
+  <div class="legend-item"><span class="jp-code jp-trade">CL-T1</span>&nbsp; Trade Beacon — frontier hub, ₢200/access</div>
+  <div class="legend-item"><span class="jp-code jp-coord">SV-0.447</span>&nbsp; Coordinate Only — no beacon, nav database required, ₢50 fee</div>
+  <div class="legend-item"><span class="jp-code jp-none">Unmapped</span>&nbsp; No official designation — black market data or unknown</div>
+  <div class="legend-item"><span class="jp-code jp-mil">M-PROM</span>&nbsp; Military / Classified — restricted access, authorization required</div>
+  <div class="legend-item"><span class="jp-code jp-dark">Offline</span>&nbsp; Beacon destroyed or decommissioned</div>
+</div>
+
+<!-- CORE WORLDS -->
+<div class="zone-section">
+<div class="zone-header core">
+  <div class="zone-name core">Core Worlds</div><span class="zone-count">11 entries</span>
+  <div class="zone-desc">Ancient colonies — established governments, full infrastructure, strong rule of law</div>
+</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Jump Point</th><th>Faction</th><th>Status</th><th>Notable Details</th></tr></thead>
+<tbody>
+<tr><td class="name">Earth <em>Historical homeworld</em></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">EARTH-B1</span></td><td class="faction">Concordat / Humanity</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Original human homeworld. Symbolic, rarely visited. Humanity spread across hundreds of worlds; no singular culture remains tied to it.</td></tr>
+<tr><td class="name">New Harmony <em>Stellaris founding system</em></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">NH-B1</span></td><td class="faction">Stellaris Corp</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Core world. Home system founded by Stellaris. <strong>Stellaris Prime</strong> moon orbits here — 800M population, corp HQ, self-sufficient moon-city.</td></tr>
+<tr><td class="name">Stellaris Prime <em>Moon of New Harmony</em></td><td class="type"><span class="badge-moon">Moon</span></td><td class="jp"><span class="jp-code jp-beacon">NH-B2</span></td><td class="faction">Stellaris Corp</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Entire moon converted to corporate HQ. 800M population — largest single company facility in known space. Agriculture domes, full self-sufficiency. Open to tourists.</td></tr>
+<tr><td class="name">New Covenant</td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">NC-B1</span></td><td class="faction">Harmonium Church</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Harmonium homeworld and spiritual seat. Guardian ruins discovered here ~7,500 years ago, triggering the Church's rise. Heavily fortified. High Inquisitor Severin Kade operates from here.</td></tr>
+<tr><td class="name">Kethra Prime</td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">KP-B1</span></td><td class="faction">Kethran species</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Kethran homeworld. Universally psionic population. Bioluminescent culture emphasizing emotional honesty and diplomatic service.</td></tr>
+<tr><td class="name">Veras <em>Low-gravity moon</em></td><td class="type"><span class="badge-moon">Moon</span></td><td class="jp"><span class="jp-code jp-beacon">VR-B1</span></td><td class="faction">Veran species</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Orbits a gas giant. Homeworld of the Veran — tall, slender, engineering geniuses. Low gravity; exoskeletons required off-world. Kael's species homeworld.</td></tr>
+<tr><td class="name">Draal Prime <em>High-gravity death world</em></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">DP-B1</span></td><td class="faction">Draal species</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Brutal, high-gravity homeworld. Produced the Draal — four-armed, honor-coded warriors. Psionic nulls. Most dangerous habitable world in Concordat space.</td></tr>
+<tr><td class="name">Nisar <em>Ocean world</em></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">NS-B1</span></td><td class="faction">Nisara species</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Vast oceans, island chains, floating cities. Home of the Nisara — amphibious traders, 200–250 year lifespan. Major economic and diplomatic influence in Concordat.</td></tr>
+<tr><td class="name">Vesta III</td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">VS-B1</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-lore">◆ Lore</span></td><td class="notes"><strong>Helix Prime Station</strong> orbits here — corporate HQ, 50,000 employees. Planetary defense forces on standby.</td></tr>
+<tr><td class="name">Synthesis System <em>Terraformed</em></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-beacon">SY-B1</span></td><td class="faction">Synthesis Biotechnologies</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Planet-scale corporate structure. <strong>Synthesis Nexus</strong> — 500,000 residents (60% augmented, 20% full synthetic). Consciousness transfer research. Growing "Pure Strain" extremist threat.</td></tr>
+<tr><td class="name">Gilead Station <em>DESTROYED</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-dark">Offline</span></td><td class="faction">House Ben Ari</td><td><span class="status-destroyed">✕ Destroyed</span></td><td class="notes">Orbital station, Ben Ari family HQ. Destroyed ~4886 SGC in antimatter explosion aboard <em>Covenant's Pride</em>. 34 dead. Nathanial framed for the disaster — his inciting exile. Beacon destroyed in explosion.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- STABLE FRONTIER -->
+<div class="zone-section">
+<div class="zone-header stable">
+  <div class="zone-name stable">Stable Frontier</div><span class="zone-count">9 entries</span>
+  <div class="zone-desc">Established outposts — some law, corporate power, long supply lines</div>
+</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Jump Point</th><th>Faction</th><th>Status</th><th>Notable Details</th></tr></thead>
+<tbody>
+<tr><td class="name">Callisto Station <em>Entertainment district</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-trade">CL-T1</span></td><td class="faction">Independent / Various</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Session 6 / Mission 3.</strong> Site of <em>The Red Velvet</em> — Forged trafficking establishment. Nathanial burned it down. 10 Forged died. News broadcast from here across the region. Hub for black-market weapon deals.</td></tr>
+<tr><td class="name">Prometheus Orbital</td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-trade">PO-T2</span></td><td class="faction">Prometheus Industries</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Massive station in neutral territory. 100,000 employees. Public R&amp;D front; hidden deep-core FTL research (Level Omega). Has an unknown high-level mole feeding intel to the Harmonium.</td></tr>
+<tr><td class="name">Helix Prime Station <em>Above Vesta III</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-trade">VS-T1</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">50,000 employees. State-of-the-art refinery and processing. Luxury amenities. Open to visitors with clearance.</td></tr>
+<tr><td class="name">New Cardiff System</td><td class="type"><span class="badge-system">System</span></td><td class="jp"><span class="jp-code jp-trade">NCA-T1</span></td><td class="faction">Stellaris / Helix</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">7 planets, 15 moons. Stellaris controls 2.1B citizens across specialized worlds. Helix mineral colony (200K). Nominal government; corporate holds real power.</td></tr>
+<tr><td class="name">New Athens <em>Prometheus colony moon</em></td><td class="type"><span class="badge-moon">Moon</span></td><td class="jp"><span class="jp-code jp-trade">NH-T3</span></td><td class="faction">Prometheus Industries</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">150,000 residents. University-like environment for top engineers and researchers. Excellent conditions to attract talent. Near core space.</td></tr>
+<tr><td class="name">New Eden <em>Synthesis orbital habitat</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-trade">SY-T1</span></td><td class="faction">Synthesis Biotechnologies</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">200,000 residents. Utopian augmentation showcase. Growing "Pure Strain" movement targets the station. Includes <strong>The Hive</strong> — 50,000 uploaded digital consciousnesses in virtual environments.</td></tr>
+<tr><td class="name">Helix Foundry <em>Arcturus system</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-trade">ARC-T1</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Heavy industrial processing hub. Key Helix resource link. Potential target for competitors or pirates seeking to disrupt supply chains.</td></tr>
+<tr><td class="name">The Anvil <em>Arcturus asteroid belt</em></td><td class="type"><span class="badge-asteroid">Asteroid</span></td><td class="jp"><span class="jp-code jp-coord">ARC-0.881</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Largest active mining complex in known space. Heavily guarded. Target for Voidborne poaching and competitor espionage.</td></tr>
+<tr><td class="name">The Workshop <em>Prometheus orbital platform</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">PO-0.554</span></td><td class="faction">Prometheus Industries</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">30,000 engineers. Minimal distractions, maximum productivity. Isolated by design — researchers rarely leave. Adjacent to Prometheus Orbital but separately managed.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- DEEP FRONTIER -->
+<div class="zone-section">
+<div class="zone-header deep">
+  <div class="zone-name deep">Deep Frontier</div><span class="zone-count">9 entries</span>
+  <div class="zone-desc">New colonies, sparse Concordat presence — opportunity and danger in equal measure</div>
+</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Jump Point</th><th>Faction</th><th>Status</th><th>Notable Details</th></tr></thead>
+<tbody>
+<tr><td class="name">Vigil Station</td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">VG-0.312</span></td><td class="faction">Independent (miners)</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">Frontier mining colony. Where OD was rescued after being spaced and drifting in stasis — 5 years of recovery and security work. Where OD and Kael met. Good relations with the miners.</td></tr>
+<tr><td class="name">Prosperity Station <em>Frontier border region</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">PS-0.891</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Helix's forward operations base. Targeted by unknown raiders after geological survey data showing Guardian ruin signatures. Multiple factions want that data.</td></tr>
+<tr><td class="name">Thalassa IV</td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-coord">TH-0.667</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Toxic tailings dam failure flooded a valley. Helix claims sabotage. Something strange may be in that valley — possibly Guardian-connected. Bodies buried under toxic sludge.</td></tr>
+<tr><td class="name">Helix Haven <em>Gas giant moon</em></td><td class="type"><span class="badge-moon">Moon</span></td><td class="jp"><span class="jp-code jp-coord">ARC-0.441</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">50,000 workers. Good quality of life for frontier standards. Modest but stable community built on gas extraction.</td></tr>
+<tr><td class="name">Thatcher's Rest <em>Ice moon</em></td><td class="type"><span class="badge-moon">Moon</span></td><td class="jp"><span class="jp-code jp-coord">ARC-0.558</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">30,000 residents. Harsh conditions, well-compensated. Tight-knit community forged by brutal environment.</td></tr>
+<tr><td class="name">Delta-7 <em>Remote asteroid facility</em></td><td class="type"><span class="badge-asteroid">Asteroid</span></td><td class="jp"><span class="jp-code jp-mil">M-D7</span></td><td class="faction">Helix Mining Corp</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Crew went silent. Facility intact but abandoned. Strange resonance readings from core — possibly Guardian artifact or hyperspace entity contact. Harmonium, Prometheus, and others want access. Military designation applied after incident.</td></tr>
+<tr><td class="name">Eden Station</td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-dark">ED-0.224 / Offline</span></td><td class="faction">Prometheus Industries</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Exotic materials research station. <strong>Recently went dark.</strong> 5,000 personnel alive but changed — exotic energy source opened contact with hyperspace entities. Beacon offline. Prometheus wants to know if research is salvageable.</td></tr>
+<tr><td class="name">The Prosperity Sphere <em>Frontier region</em></td><td class="type"><span class="badge-region">Region</span></td><td class="jp"><span class="jp-code jp-coord">Various</span></td><td class="faction">Stellaris Corp</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">40+ colonies, 600M Stellaris citizens. Newest expansion zone. Independent culture developing — tension with corporate HQ growing. Mix of mining, manufacturing, agricultural worlds.</td></tr>
+<tr><td class="name">Korsakov Belt</td><td class="type"><span class="badge-asteroid">Asteroid Belt</span></td><td class="jp"><span class="jp-code jp-coord">KB-0.774</span></td><td class="faction">Contested (Helix / Voidborne)</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Site of a major incident between Helix and Voidborne — the "Korsakov Belt Incident." Helix suffered significant losses here; Voidborne denies involvement. Rich in rare minerals. Legal ownership disputed. Dangerous to operate in.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- LAWLESS SPACE -->
+<div class="zone-section">
+<div class="zone-header lawless">
+  <div class="zone-name lawless">Lawless Space</div><span class="zone-count">16 entries</span>
+  <div class="zone-desc">Concordat authority exists on paper only — pirates, rogue corps, and worse operate here</div>
+</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Jump Point</th><th>Faction</th><th>Status</th><th>Notable Details</th></tr></thead>
+<tbody>
+<tr><td class="name">Helix-7 <em>Prologue site</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">Unmapped</span></td><td class="faction">Neutral / Disputed</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Session 0 prologue.</strong> Site of the failed peace talks. Pirate ambush mid-negotiation. Not Red Suns territory — a neutral location that proved anything but.</td></tr>
+<tr><td class="name">Freehaven Colony <em>Planetoid, marginal atmosphere</em></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-none">FH-0.119</span></td><td class="faction">Independent colony</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Sessions 0–2.</strong> Emergency crash landing. Small colony under Red Suns siege. Home of Sarah Chen and Old Jake Harrison. Concordat response: "too far out." Coordinate is black-market data only — no official beacon.</td></tr>
+<tr><td class="name">Red Suns Drill Facility</td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">Unmapped</span></td><td class="faction">Red Suns / Megacorp</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Session 2.</strong> Infiltrated to rescue Sarah Chen. Corporate megadrill under pirate control. OD knocked unconscious during Torval Kaine's ambush — current cliffhanger.</td></tr>
+<tr><td class="name">Crossroads Station</td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">CR-0.334</span></td><td class="faction">Independent</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Mission 4 start.</strong> Independent waystation, fuel and supplies. Public bounty board where the crew picked up the Void Reavers contract.</td></tr>
+<tr><td class="name">Talos System <em>Outer Reach</em></td><td class="type"><span class="badge-system">System</span></td><td class="jp"><span class="jp-code jp-coord">TL-0.556</span></td><td class="faction">Talos Independent Law Coalition</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Mission 4.</strong> Minimal Concordat presence. Self-policing via bounties and local constables. Five distinct settlements explored by the crew.</td></tr>
+<tr><td class="name">&nbsp;&nbsp;↳ New Pittsburgh</td><td class="type"><span class="badge-planet">Settlement</span></td><td class="jp"><span class="jp-code jp-coord">TL-0.556</span></td><td class="faction">Independent / Talos</td><td><span class="status-visited">★ Visited</span></td><td class="notes">Mining settlement, 300 people. Massacred by the Void Reavers — 14 dead. Constable Sarah Vickers issued the bounty.</td></tr>
+<tr><td class="name">&nbsp;&nbsp;↳ Junction Station <em>Above Talos II</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">TL-0.712</span></td><td class="faction">Independent / Corporate</td><td><span class="status-visited">★ Visited</span></td><td class="notes">Industrial station orbiting gas giant. 2,000 residents. Void Reavers hit a military depot here — 5 guards killed. Key investigation clue site.</td></tr>
+<tr><td class="name">&nbsp;&nbsp;↳ Harlow's Landing</td><td class="type"><span class="badge-planet">Settlement</span></td><td class="jp"><span class="jp-code jp-coord">TL-0.891</span></td><td class="faction">Independent</td><td><span class="status-visited">★ Visited</span></td><td class="notes">Frontier trading post. Rough edges, transient population. Where drifters pass through.</td></tr>
+<tr><td class="name">&nbsp;&nbsp;↳ Neon Point <em>Asteroid station</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">TL-1.003</span></td><td class="faction">Criminal / Independent</td><td><span class="status-visited">★ Visited</span></td><td class="notes">Red-light station. Casinos, fighting pits, brothels. 800 permanent residents. Private security only. Unofficial coordinate — not in standard nav databases.</td></tr>
+<tr><td class="name">&nbsp;&nbsp;↳ The Broken Ring <em>Abandoned</em></td><td class="type"><span class="badge-derelict">Derelict</span></td><td class="jp"><span class="jp-code jp-none">TL-1.127</span></td><td class="faction">None / Void Reavers squat</td><td><span class="status-visited">★ Visited</span></td><td class="notes">Abandoned infrastructure, perfect hiding spots. Void Reavers' base of operations. Final confrontation site of Mission 4.</td></tr>
+<tr><td class="name">Solis Vael System <em>Jump Coord SV-0.447</em></td><td class="type"><span class="badge-system">System</span></td><td class="jp"><span class="jp-code jp-coord">SV-0.447</span></td><td class="faction">Unclaimed</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Session 6.</strong> Mid-range transit point, light traffic. Appears on charts only as refueling notation.</td></tr>
+<tr><td class="name">&nbsp;&nbsp;↳ Verath</td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-coord">SV-0.447</span></td><td class="faction">Unclaimed</td><td><span class="status-visited">★ Visited</span></td><td class="notes"><strong>Session 6.</strong> Warm ocean world, volcanic island chains. Crew tested the living weapon here — liquefied basalt instantly. 60 escape pod survivors rescued in its orbit.</td></tr>
+<tr><td class="name">Jacksonville 5</td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-coord">JV-0.229</span></td><td class="faction">Unknown</td><td><span class="status-prep">◈ Mentioned</span></td><td class="notes">Original Session 0 delivery destination (Delpin cargo). 3-day window missed. The contract that started everything.</td></tr>
+<tr><td class="name">Blacksite Prometheus <em>Classified</em></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-mil">M-PROM</span></td><td class="faction">Prometheus Industries</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Existence officially denied. Experimental FTL research program. Level Omega clearance. Military jump designation applied by Prometheus private fleet — not Concordat authorized.</td></tr>
+<tr><td class="name">The Crucible <em>Prometheus asteroid lab</em></td><td class="type"><span class="badge-asteroid">Asteroid</span></td><td class="jp"><span class="jp-code jp-none">Unmapped</span></td><td class="faction">Prometheus Industries</td><td><span class="status-hook">◉ Hook</span></td><td class="notes">Energy research and xenotechnology analysis. Off all official charts by design — hard for Harmonium to surveil. Alternative FTL energy source here is corrupting researchers.</td></tr>
+<tr><td class="name">Augment City <em>Synthesis colony</em></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-coord">AC-0.667</span></td><td class="faction">Synthesis Biotechnologies</td><td><span class="status-lore">◆ Lore</span></td><td class="notes">100,000 workers. Affordable augmentation clinic testing ground for Synthesis. Lawless placement removes regulatory oversight. Residents often don't know what they're testing.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- BEYOND CONCORDAT -->
+<div class="zone-section">
+<div class="zone-header beyond">
+  <div class="zone-name beyond">Beyond the Concordat</div><span class="zone-count">5 entries</span>
+  <div class="zone-desc">Non-member civilizations — alien territories and the spaces between</div>
+</div>
+<table>
+<thead><tr><th>Name / Territory</th><th>Type</th><th>Jump Point</th><th>Species</th><th>Concordat Relation</th><th>Notable Details</th></tr></thead>
+<tbody>
+<tr><td class="name">Vrynn Houses <em>Former empire, fragmented</em></td><td class="type"><span class="badge-system">Territory</span></td><td class="jp"><span class="jp-code jp-none">No Concordat data</span></td><td class="species-cell">Vrynn (8,000 yrs)</td><td><span class="status-hook">Hostile</span></td><td class="notes">Once a vast empire, collapsed ~1,000 SGC ago into warring noble Houses. Raid frontier worlds. Advanced weapons tech but no industrial base. Possible connection to hyperspace entity encounters — reason for the Collapse unknown.</td></tr>
+<tr><td class="name">Shal'Tir Collective <em>Sealed territory</em></td><td class="type"><span class="badge-system">Territory</span></td><td class="jp"><span class="jp-code jp-mil">Restricted / Shal'Tir</span></td><td class="species-cell">Shal'Tir (15,000+ yrs)</td><td><span class="status-lore">Neutral / Isolated</span></td><td class="notes">Sealed borders ~8,000 SGC ago after catastrophic hyperspace entity encounter. Now incomprehensible to outsiders. May be actively containing entities. Core campaign secret.</td></tr>
+<tr><td class="name">Remnant Habitats <em>Hidden, scattered</em></td><td class="type"><span class="badge-station">Stations</span></td><td class="jp"><span class="jp-code jp-none">Unknown</span></td><td class="species-cell">Remnant (Shal'Tir survivors)</td><td><span class="status-lore">Hostile to contact</span></td><td class="notes">NOT a separate race — survivors of the Shal'Tir faction destroyed by hyperspace entities ~5,000 SGC. Know what the entities are capable of. They understand what's coming. Never communicated with.</td></tr>
+<tr><td class="name">Kyth Hive Clusters <em>Multiple locations</em></td><td class="type"><span class="badge-system">Territory</span></td><td class="jp"><span class="jp-code jp-none">Kyth non-hyperspace</span></td><td class="species-cell">Kyth (5,000 yrs)</td><td><span class="status-prep">Variable</span></td><td class="notes">Insectoid hive intelligence spread across frontier regions. Some hives trade peacefully; others are existential threats. Use both Harmonium FTL and their own non-hyperspace system. May perceive the Stellar Call differently. Harmonium is uncomfortable with their technological parity.</td></tr>
+<tr><td class="name">Tal'Veran Nomad Routes</td><td class="type"><span class="badge-nomadic">Nomadic</span></td><td class="jp"><span class="jp-code jp-none">Tal'Veran non-hyperspace</span></td><td class="species-cell">Tal'Veran (25,000+ yrs)</td><td><span class="status-lore">Cautious traders</span></td><td class="notes">Traveling in massive generation ships using non-hyperspace FTL. Have warned the Concordat about "void dangers" for 3,500 years; dismissed as superstition. Warnings are becoming more specific as the Stellar Call intensifies.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ADDITIONAL LOCATIONS — 30 QUICK USE -->
+<div class="zone-section">
+<div class="add-header">
+  <div class="add-title">Additional Locations — Quick Reference</div><span class="zone-count">30 entries</span>
+  <div class="add-desc">Ready to drop in — zone colour-coded by row</div>
+</div>
+<table>
+<thead><tr><th>Name</th><th>Zone</th><th>Type</th><th>Jump Point</th><th>Faction</th><th>Hook / Description</th></tr></thead>
+<tbody>
+
+<!-- CORE / STABLE 4 entries -->
+<tr class="zband-core"><td class="name">Concordat Assembly Ring <em>Neutral orbit, core space</em></td><td><span class="zone-pill pill-core">Core</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-beacon">ASSY-B1</span></td><td class="faction">Concordat Government</td><td class="notes">The main seat of Concordat government — enormous orbital ring station above a neutral planet. Where species councils and corporate delegates battle for influence. Assembly Speaker Zara Venn presides. Useful for political pressure, backroom deals, or blowing up a careers.</td></tr>
+
+<tr class="zband-core"><td class="name">Harmonium Cathedral Station <em>New Covenant system</em></td><td><span class="zone-pill pill-core">Core</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-beacon">NC-B2</span></td><td class="faction">Harmonium Church</td><td class="notes">The Church's central administrative hub in orbit above New Covenant. Not a religious building — a fortress disguised as one. High Inquisitor Severin Kade's seat of power. Pilgrims and Inquisitors share the same corridors. Surveillance here is total.</td></tr>
+
+<tr class="zband-stable"><td class="name">Kethran Embassy Station <em>Stable frontier, orbital</em></td><td><span class="zone-pill pill-stable">Stable</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-trade">KE-T1</span></td><td class="faction">Kethran diplomatic corps</td><td class="notes">Kethran-designed diplomatic outpost near the frontier. Where species mediate before conflicts escalate. Beautiful organic architecture. Psionics are baseline-active throughout — deception is difficult. Genuinely neutral ground.</td></tr>
+
+<tr class="zband-stable"><td class="name">The Salvator Mundi <em>Drifting, stable frontier</em></td><td><span class="zone-pill pill-stable">Stable</span></td><td class="type"><span class="badge-derelict">Derelict</span></td><td class="jp"><span class="jp-code jp-trade">SM-T2</span></td><td class="faction">Concordat Heritage Trust</td><td class="notes">A first-wave generation ship discovered drifting, population long dead. Now converted into a memorial museum. Eerie interior — original furniture, clothing, and personal logs still intact. Ghost tourism. But something in the deep holds triggers sensor anomalies that the Trust quietly suppresses.</td></tr>
+
+<!-- DEEP FRONTIER 8 entries -->
+<tr class="zband-deep"><td class="name">Ironhold Station</td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">IH-0.443</span></td><td class="faction">Voidborne Mining Guild</td><td class="notes">Voidborne's primary deep-frontier hub. 80,000 workers. No questions asked. The best place to fence stolen cargo, hire a crew with no history, or disappear for a while. ARIA would describe it as "a place where paperwork goes to die." Konstantin Vex visits occasionally.</td></tr>
+
+<tr class="zband-deep"><td class="name">Pale Station <em>Off all official charts</em></td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">Unmapped</span></td><td class="faction">Forged Underground</td><td class="notes">A Forged Underground safe house disguised as a decommissioned medical supply depot. Forged refugees move through in waves. OD has heard the name. Sarah Chen may know about it. No beacon, off every official chart. Finding it requires trust from the right people.</td></tr>
+
+<tr class="zband-deep"><td class="name">New Pergamon <em>Low-gravity research moon</em></td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-moon">Moon</span></td><td class="jp"><span class="jp-code jp-coord">NP-0.671</span></td><td class="faction">Veran research community</td><td class="notes">Veran-founded research colony focused on xenotechnology and pre-Concordat artifact analysis. Kael has colleagues here. Possibly a Sorivaan Institute satellite facility. Under pressure from Harmonium surveillance. Low gravity — comfortable for Kael without exoskeleton.</td></tr>
+
+<tr class="zband-deep"><td class="name">The Counting House</td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">CH-0.298</span></td><td class="faction">Nisara trade networks</td><td class="notes">Nisara-operated waystation and information brokerage. Most reliable source of intelligence in the outer reaches — for a price. Politically neutral by Nisara contract. Excellent food. A word given here is binding; a deal broken here follows you permanently.</td></tr>
+
+<tr class="zband-deep"><td class="name">Deepwell Colony</td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-coord">DW-0.884</span></td><td class="faction">Horizons Dynamics / Kowalski Forged</td><td class="notes">Deep-core drilling colony on a geologically active world. Mostly Kowalski Forged workers — shortened lifespan, hard labor, tension simmering. The drill recently broke through to a sealed chamber no geological survey predicted. Horizon management is keeping it quiet. It should not be kept quiet.</td></tr>
+
+<tr class="zband-deep"><td class="name">Sable Station <em>Chimera black site</em></td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">SB-0.112 / Private</span></td><td class="faction">Chimera Biosystems</td><td class="notes">Chimera's forward black site. OD's creation records and contract data may be stored here. Officially a "xenobiological research outpost." Where escaped Forged are brought back if caught. The crew should not go here unless prepared. But it's where the answers are.</td></tr>
+
+<tr class="zband-deep"><td class="name">The Driftyard</td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-derelict">Derelict</span></td><td class="jp"><span class="jp-code jp-coord">DY-0.559</span></td><td class="faction">Drifter community (independent)</td><td class="notes">A massive collection of decommissioned and wrecked ships lashed together into a semi-functional station. Home to 15,000 Drifters. Only community in the region with zero corporate affiliation. Hostile to outsiders but invaluable for salvage and black-market ship parts. No names given, no names taken.</td></tr>
+
+<tr class="zband-deep"><td class="name">Mercy Point <em>Neutral medical station</em></td><td><span class="zone-pill pill-deep">Deep</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">MP-0.337</span></td><td class="faction">Kethran / Nisara joint</td><td class="notes">Neutral medical station maintained jointly by the Kethran and Nisara communities. Treats anyone, asks nothing, charges what you can afford. One of the only places in frontier space that treats Forged as patients rather than property. A genuine sanctuary — everyone knows shooting here is suicide for your reputation.</td></tr>
+
+<!-- LAWLESS 14 entries -->
+<tr class="zband-lawless"><td class="name">The Architect's Eye <em>Active Guardian ruin</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-ruin">Guardian Ruin</span></td><td class="jp"><span class="jp-code jp-mil">Classified / Harmonium</span></td><td class="faction">Harmonium (secret research team)</td><td class="notes">A moon-sized Guardian structure slowly "waking up" for the past 92 years. Harmonium has a classified team here the crew doesn't know about yet. Low-level Stellar Call resonance emanates continuously. Ships that stay too long report navigators acting strangely. ARIA would flag the anomaly.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Ashport <em>Abandoned colony</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-dark">AP-0.774 / Offline</span></td><td class="faction">None / Red Suns occasional</td><td class="notes">Colony of 12,000, abandoned six years ago after a Vrynn raid destroyed the water reclamation systems. Shells of buildings, personal effects still in homes. Red Suns occasionally resupply here. The beacon was destroyed in the raid. Unsettlingly intact.</td></tr>
+
+<tr class="zband-lawless"><td class="name">The Wound <em>Hyperspace anomaly zone</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-region">Region</span></td><td class="jp"><span class="jp-code jp-none">Avoid — no safe vector</span></td><td class="faction">None</td><td class="notes">A region where the boundary between real space and hyperspace has cracked. Ships that transit through report longer-than-calculated transit times, impossible sensor readings, and crew experiencing the Stellar Call with unusual intensity. The Harmonium says it doesn't exist. Navigation databases route around it in silence.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Grave Anchor <em>Derelict military cruiser</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-derelict">Derelict</span></td><td class="jp"><span class="jp-code jp-coord">GA-1.223</span></td><td class="faction">Various pirates (rotating)</td><td class="notes">A Concordat cruiser from a war 300 years ago, drifting in a dead system's outer belt. Interior still pressurized — nobody knows how. Used by rotating pirate crews as a staging point. Someone left the reactor running. The original crew's personal logs are still in the barracks.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Harrow's Gate <em>Last official waystation</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-trade">HG-T3</span></td><td class="faction">Harmonium (minimal presence)</td><td class="notes">The last officially-recognized waystation before the acknowledged edge of Concordat territory. One overworked Harmonium friar and a beacon that needs calibration. Beyond this, nav subscriptions technically don't cover you. People stop here to decide whether to turn back.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Sorivaan Institute Annex <em>Kael's old outpost</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">SI-0.441</span></td><td class="faction">Abandoned / Dr. Korin interest</td><td class="notes">The frontier research outpost where Kael was stationed when he discovered the Device. Officially shut down after his "accident." Dr. Vetha Korin's people have been seen near it recently. Kael's old lab notes may still be here — and whatever else he left behind when he ran.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Red Suns Staging Point Omicron</td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-asteroid">Asteroid</span></td><td class="jp"><span class="jp-code jp-none">Pirate route only</span></td><td class="faction">Red Suns</td><td class="notes">One of several Red Suns fleet staging areas. Captain Torval Kaine has used this location. Small but well-armed installation — docking for six to eight ships, repair facilities, armory. Finding and verifying this location would be significant leverage against the Red Suns organization.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Cold Reach Station</td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">CR-1.447</span></td><td class="faction">Independent (Draal owner)</td><td class="notes">Independent waystation, far out. Run by a retired Draal mercenary — honest prices, adequate heating, no questions. The kind of place you stop when you have to. ARIA would call it "adequate." The owner would call it home. Good for laying low without owing anyone anything.</td></tr>
+
+<tr class="zband-lawless"><td class="name">The Narrows <em>Asteroid corridor</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-asteroid">Asteroid Belt</span></td><td class="jp"><span class="jp-code jp-none">NR-0.882 / Spacer knowledge</span></td><td class="faction">Various smugglers</td><td class="notes">A dense asteroid corridor connecting two lawless regions. Harmonium beacons too far to monitor effectively. Running with lights off is standard practice. Three known ambush points the crew can learn about for a price. The short route through here saves two days. Whether it's worth it depends on who's waiting.</td></tr>
+
+<tr class="zband-lawless"><td class="name">The Lighthouse <em>Repurposed Harmonium beacon</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">LH-0.661 / Unlicensed</span></td><td class="faction">Independent (black market)</td><td class="notes">An abandoned Harmonium nav beacon, shut down decades ago, bought and converted into a waystation and information exchange. Still transmits navigation data — just not licensed data. Black-market maps sold openly. The Harmonium knows it exists and has decided the removal cost isn't worth the trouble. For now.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Wreck of the Exodus Chain</td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-derelict">Derelict</span></td><td class="jp"><span class="jp-code jp-coord">EX-0.993</span></td><td class="faction">None / Salvagers</td><td class="notes">Scattered debris of four first-wave generation ships that collided after a navigation failure ~2,000 years ago. The wreck field spans 200,000 km. Salvagers have been picking it clean for centuries. But the deepest wreck is still transmitting — a signal no one has matched to any known format. The beacon database flags the field as a hazard and says nothing else.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Voidborne Hub Sigma</td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">VB-0.558</span></td><td class="faction">Voidborne Mining Guild</td><td class="notes">Voidborne's lawless-space forward base. Konstantin Vex's personal operation runs a sub-facility here. High pay, hard work, no records. The crew could take a contract and find themselves deeper in Voidborne politics than intended. Vex likes people who get results and doesn't ask how.</td></tr>
+
+<tr class="zband-lawless"><td class="name">Venn's Watch <em>Hidden relay node</em></td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">Unknown to players</span></td><td class="faction">Director Venn</td><td class="notes">A small monitoring station operated by Director Venn, who is hunting the crew. Passive sensor sweep covering several jump routes. The crew doesn't know it exists. ARIA might detect an anomalous ping if they pass close. Discovering it changes the dynamic — someone is running a network out here, and it has their name on it.</td></tr>
+
+<tr class="zband-lawless"><td class="name">The Quarantine Ring</td><td><span class="zone-pill pill-lawless">Lawless</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-coord">QR-0.117</span></td><td class="faction">None / Quarantine-sealed</td><td class="notes">Station placed under Concordat quarantine eight years ago after an unspecified "biological incident." Quarantine ships withdrew after two years. Sealed and silent inside for six years — but the transponder still broadcasts. Someone is offering 50,000 credits for an investigation team. Nobody has taken it yet.</td></tr>
+
+<!-- BEYOND 4 entries -->
+<tr class="zband-beyond"><td class="name">House Karath Fortress World <em>Vrynn territory</em></td><td><span class="zone-pill pill-beyond">Beyond</span></td><td class="type"><span class="badge-planet">Planet</span></td><td class="jp"><span class="jp-code jp-none">No Concordat nav data</span></td><td class="species-cell">Vrynn — House Karath</td><td class="notes">A captured colony world held by House Karath, one of the more militarized surviving Vrynn Houses. Fortified with reclaimed Guardian-derived weapons tech. Raids Concordat frontier worlds seasonally. The House's internal politics are fracturing — there are factions here that want to deal, if anyone is willing to go to them.</td></tr>
+
+<tr class="zband-beyond"><td class="name">Kyth Trade Outpost — Hive Veth <em>Kyth border</em></td><td><span class="zone-pill pill-beyond">Beyond</span></td><td class="type"><span class="badge-station">Station</span></td><td class="jp"><span class="jp-code jp-none">Kyth non-hyperspace only</span></td><td class="species-cell">Kyth — Hive Collective Veth</td><td class="notes">One of the few Kyth hives that trades peacefully with the Concordat. This outpost sits at the edge of Kyth territory. Hive Veth is curious about humanoid psychology — and they have noticed the Stellar Call. They want to discuss it. Conversation happens in simultaneous multi-voice streams. Not easy. Worth it.</td></tr>
+
+<tr class="zband-beyond"><td class="name">The Slow Road <em>Tal'Veran meeting point</em></td><td><span class="zone-pill pill-beyond">Beyond</span></td><td class="type"><span class="badge-nomadic">Nomadic</span></td><td class="jp"><span class="jp-code jp-none">Tal'Veran non-hyperspace only</span></td><td class="species-cell">Tal'Veran nomads</td><td class="notes">The Tal'Veran have a semi-permanent meeting location near a gas giant where they anchor their generation ships for trade and exchange. They will speak to the crew about the Stellar Call if approached respectfully. Their warnings are no longer vague. They have been waiting 3,500 years for someone to actually listen.</td></tr>
+
+<tr class="zband-beyond"><td class="name">The Shal'Tir Boundary Marker</td><td><span class="zone-pill pill-beyond">Beyond</span></td><td class="type"><span class="badge-ruin">Marker</span></td><td class="jp"><span class="jp-code jp-none">No approach vector / Shal'Tir enforcement</span></td><td class="species-cell">Shal'Tir</td><td class="notes">A massive structure of unknown material floating at the edge of Shal'Tir territory. Not a station, not a weapon — a warning. Broadcasts on a frequency no Concordat equipment was designed to receive. Translated roughly: <em>"What is inside protects you. Turn back."</em> The Black Dahlia can get close enough to see it. The crew should not cross it. Not yet.</td></tr>
+
+</tbody>
+</table>
+</div>
+
+<!-- FOOTNOTES -->
+<div class="footnotes">
+  <p><strong>Status Key</strong></p>
+  <div class="divider"></div>
+  <p><span class="status-visited">★ Visited</span> — Players have been here in active campaign sessions.</p>
+  <p><span class="status-prep">◈ Mentioned</span> — Referenced in session or lore but not yet visited in play.</p>
+  <p><span class="status-hook">◉ Hook</span> — Prepared location with mission material ready to run.</p>
+  <p><span class="status-lore">◆ Lore</span> — Established in worldbuilding; may become relevant as the campaign develops.</p>
+  <p><span class="status-destroyed">✕ Destroyed</span> — No longer accessible; historical significance only.</p>
+  <div class="divider"></div>
+  <p><strong>Jump Point Notes</strong></p>
+  <div class="divider"></div>
+  <p>Beacon codes follow Harmonium standard: [SYSTEM ABBREV]-B[#] for major systems, T[#] for trade route hubs. Frontier coordinate format [SYS]-[coord] requires an active nav database subscription — operating without one in frontier space is illegal and dangerous. Locations marked Unmapped require black-market navigation data (₢500–15,000 depending on age and source). Military designations (M-[code]) are Concordat or private fleet designations — civilian access requires authorization. Offline beacons can still be used as approach references if you have old coordinates, but drift increases approach failure risk by 10% per year since last update.</p>
+  <p><em>Total entries: 80 (50 established + 30 quick-use). Document generated SGY 4892 — GM reference only. Do not surface to players.</em></p>
+</div>
+
+</div><!-- end page-wrap -->
+</body>
+</html>
