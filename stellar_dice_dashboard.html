@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Call - Dice Roller Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital@0;1&display=swap');
+
+        :root {
+            --primary-gold: #d4af37;
+            --primary-dark: #0a0e27;
+            --secondary-dark: #1a1f3a;
+            --tertiary-dark: #252d47;
+            --accent-crimson: #a52a3a;
+            --accent-emerald: #2a5f4a;
+            --text-light: #e8dcc8;
+            --border-gold: #8b7355;
+        }
+
+        body {
+            background-color: var(--primary-dark);
+            color: var(--text-light);
+            font-family: 'Crimson Text', serif;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(165, 42, 58, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--primary-gold);
+            padding-bottom: 30px;
+            position: relative;
+        }
+
+        header::before,
+        header::after {
+            content: '◆';
+            position: absolute;
+            color: var(--primary-gold);
+            font-size: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        header::before {
+            left: 20px;
+        }
+
+        header::after {
+            right: 20px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3em;
+            font-weight: 900;
+            color: var(--primary-gold);
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            color: var(--accent-crimson);
+            font-style: italic;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+        }
+
+        /* MAIN LAYOUT */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* CARD STYLES */
+        .card {
+            background: linear-gradient(135deg, var(--secondary-dark) 0%, var(--tertiary-dark) 100%);
+            border: 2px solid var(--border-gold);
+            border-radius: 2px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary-gold);
+            box-shadow: 0 12px 48px rgba(212, 175, 55, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .card-icon {
+            font-size: 1.8em;
+            color: var(--primary-gold);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5em;
+            color: var(--primary-gold);
+            letter-spacing: 1px;
+        }
+
+        /* CONTROLS */
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: var(--primary-gold);
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-gold);
+            color: var(--text-light);
+            font-family: 'Crimson Text', serif;
+            font-size: 1em;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        select:hover, select:focus,
+        input[type="number"]:hover, input[type="number"]:focus {
+            border-color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            outline: none;
+        }
+
+        /* BUTTONS */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        button {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--primary-gold), #a67c52);
+            color: var(--primary-dark);
+            border: none;
+            border-radius: 2px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #e8d7a0, var(--primary-gold));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(212, 175, 55, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, var(--accent-crimson), #7a1f2a);
+            color: var(--text-light);
+            box-shadow: 0 4px 16px rgba(165, 42, 58, 0.2);
+        }
+
+        button.secondary:hover {
+            background: linear-gradient(135deg, #c63652, var(--accent-crimson));
+            box-shadow: 0 6px 24px rgba(165, 42, 58, 0.3);
+        }
+
+        /* RESULT DISPLAY */
+        .result-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 4px solid var(--primary-gold);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 2px;
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        .result-box.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .roll-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            color: var(--primary-gold);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .roll-interpretation {
+            color: var(--text-light);
+            font-size: 1.05em;
+            line-height: 1.8;
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            padding-top: 15px;
+        }
+
+        /* CREW RESULTS */
+        .crew-tracker {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .crew-member {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-gold);
+            padding: 15px;
+            text-align: center;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .crew-member.matched {
+            border-color: var(--primary-gold);
+            background: rgba(212, 175, 55, 0.1);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+        }
+
+        .crew-name {
+            color: var(--primary-gold);
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .crew-roll {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: var(--accent-crimson);
+            font-weight: 900;
+        }
+
+        /* INSTRUCTIONS BOX */
+        .instructions {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(165, 42, 58, 0.05));
+            border: 2px solid var(--primary-gold);
+            padding: 25px;
+            border-radius: 2px;
+            margin-bottom: 40px;
+            grid-column: 1 / -1;
+        }
+
+        .instructions-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4em;
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .instruction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .instruction-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-left: 3px solid var(--primary-gold);
+            border-radius: 2px;
+        }
+
+        .instruction-label {
+            color: var(--primary-gold);
+            font-weight: bold;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .instruction-text {
+            color: var(--text-light);
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        /* COLLAPSIBLE TABLES */
+        .table-container {
+            margin-top: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .table-toggle {
+            width: 100%;
+            padding: 15px;
+            background: rgba(212, 175, 55, 0.1);
+            border: none;
+            color: var(--primary-gold);
+            text-align: left;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .table-toggle:hover {
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .table-toggle.active {
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        .table-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .table-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .table-content table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        .table-content td {
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            color: var(--text-light);
+        }
+
+        .table-content td:first-child {
+            color: var(--primary-gold);
+            font-weight: bold;
+            width: 60px;
+            text-align: center;
+        }
+
+        .table-content tr:hover td {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* STELLAR DIE INFO */
+        .stellar-die-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .die-result {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-gold);
+            padding: 12px;
+            text-align: center;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .die-result.complication {
+            border-color: var(--accent-crimson);
+        }
+
+        .die-result.complication:hover {
+            background: rgba(165, 42, 58, 0.1);
+        }
+
+        .die-result.clean {
+            border-color: var(--accent-emerald);
+        }
+
+        .die-result.clean:hover {
+            background: rgba(42, 95, 74, 0.1);
+        }
+
+        .die-result.opportunity {
+            border-color: var(--primary-gold);
+        }
+
+        .die-result.opportunity:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .die-label {
+            color: var(--text-light);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .die-outcome {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 2px solid var(--primary-gold);
+            margin-top: 60px;
+            color: var(--text-light);
+            opacity: 0.8;
+        }
+
+        .aria-quote {
+            font-style: italic;
+            color: var(--accent-crimson);
+            margin-bottom: 10px;
+        }
+
+        /* MOBILE OPTIMIZATIONS */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .instruction-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .roll-value {
+                font-size: 2em;
+            }
+
+            header::before,
+            header::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>STELLAR CALL</h1>
+            <p class="tagline">Campaign Dice Roller</p>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- INSTRUCTIONS -->
+            <div class="instructions">
+                <div class="instructions-title">How to Use This Dashboard</div>
+                <div class="instruction-grid">
+                    <div class="instruction-item">
+                        <div class="instruction-label">1. Select Campaign Phase</div>
+                        <div class="instruction-text">Choose Early, Mid, or Late Campaign to adjust Stellar Call and Random Encounters table interpretations.</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-label">2. Roll Stellar Die (d8)</div>
+                        <div class="instruction-text">Each crew member rolls when entering hyperspace. Track results to find matching intensity brackets.</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-label">3. Check for Phenomena</div>
+                        <div class="instruction-text">If 2+ crew match intensity (3-5, 6-7, or 8), roll Hyperspace Phenomena. Use the bracket that triggered.</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-label">4. Random Encounters</div>
+                        <div class="instruction-text">Roll d20 when crew has downtime between destinations. Intensity increases with campaign phase.</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-label">5. Ship Complications</div>
+                        <div class="instruction-text">Roll d10 for organic system failures during downtime, post-combat, or post-jump.</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-label">The Stellar Die</div>
+                        <div class="instruction-text">For skill checks: 1-2 = Complication, 3-4 = Clean Result, 5-6 = Opportunity. Affects story, not math.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAMPAIGN PHASE SELECTOR -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚙</div>
+                    <div class="card-title">Campaign Phase</div>
+                </div>
+                <div class="control-group">
+                    <label for="campaign-phase">Select Phase</label>
+                    <select id="campaign-phase">
+                        <option value="1">Early Campaign</option>
+                        <option value="2" selected>Mid Campaign</option>
+                        <option value="3">Late Campaign</option>
+                    </select>
+                </div>
+                <div class="result-box active" id="phase-info">
+                    <p>Mid Campaign selected. Stellar Call focuses on present sensations with clearer direction hints. Encounters grow more complex and faction-aware.</p>
+                </div>
+            </div>
+
+            <!-- STELLAR CALL ROLLER -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">✦</div>
+                    <div class="card-title">Stellar Call (d8)</div>
+                </div>
+                <p style="margin-bottom: 15px; color: var(--text-light); opacity: 0.9;">Individual crew member rolls when entering hyperspace</p>
+                <div class="control-group">
+                    <label for="crew-member">Crew Member</label>
+                    <select id="crew-member">
+                        <option value="Nathanial">Nathanial Ben Ari</option>
+                        <option value="OD">OD (Omega Debries)</option>
+                        <option value="Kael">Kael Sorivaan Veran</option>
+                        <option value="ARIA">ARIA (Ship AI)</option>
+                    </select>
+                </div>
+                <button onclick="rollStellarCall()">Roll d8</button>
+                <div class="result-box" id="stellar-result">
+                    <div class="roll-value" id="stellar-roll">-</div>
+                    <div class="roll-interpretation" id="stellar-interpretation"></div>
+                </div>
+                <div class="crew-tracker" id="crew-tracker"></div>
+                <div class="table-container">
+                    <button class="table-toggle" onclick="toggleTable('stellar-table')">View Full Stellar Call Table <span>▼</span></button>
+                    <div class="table-content" id="stellar-table">
+                        <p style="color: var(--primary-gold); margin-bottom: 15px; font-weight: bold;">Loading Stellar Call table...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HYPERSPACE PHENOMENA ROLLER -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">◈</div>
+                    <div class="card-title">Hyperspace Phenomena (d12)</div>
+                </div>
+                <p style="margin-bottom: 15px; color: var(--text-light); opacity: 0.9;">Roll when 2+ crew match intensity bracket</p>
+                <div class="control-group">
+                    <label for="phenomena-intensity">Intensity Bracket</label>
+                    <select id="phenomena-intensity">
+                        <option value="A" selected>A - Subtle (3-5)</option>
+                        <option value="B">B - Insistent (6-7)</option>
+                        <option value="C">C - Entity Contact (8)</option>
+                    </select>
+                </div>
+                <button onclick="rollHyperspacePhenomena()">Roll d12</button>
+                <div class="result-box" id="phenomena-result">
+                    <div class="roll-value" id="phenomena-roll">-</div>
+                    <div class="roll-interpretation" id="phenomena-interpretation"></div>
+                </div>
+                <div class="table-container">
+                    <button class="table-toggle" onclick="toggleTable('phenomena-table')">View Full Phenomena Table <span>▼</span></button>
+                    <div class="table-content" id="phenomena-table">
+                        <p style="color: var(--primary-gold); margin-bottom: 15px; font-weight: bold;">Loading phenomena table...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RANDOM ENCOUNTERS ROLLER -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚔</div>
+                    <div class="card-title">Random Encounters (d20)</div>
+                </div>
+                <p style="margin-bottom: 15px; color: var(--text-light); opacity: 0.9;">Roll during crew downtime between destinations</p>
+                <button onclick="rollRandomEncounter()" style="width: 100%;">Roll d20</button>
+                <div class="result-box" id="encounter-result">
+                    <div class="roll-value" id="encounter-roll">-</div>
+                    <div class="roll-interpretation" id="encounter-interpretation"></div>
+                </div>
+                <div class="table-container">
+                    <button class="table-toggle" onclick="toggleTable('encounter-table')">View Full Encounters Table <span>▼</span></button>
+                    <div class="table-content" id="encounter-table">
+                        <p style="color: var(--primary-gold); margin-bottom: 15px; font-weight: bold;">Loading encounters table...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHIP COMPLICATIONS ROLLER -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚙</div>
+                    <div class="card-title">Ship Complications (d10)</div>
+                </div>
+                <p style="margin-bottom: 15px; color: var(--text-light); opacity: 0.9;">Roll for organic system failures and malfunctions</p>
+                <button onclick="rollShipComplication()" style="width: 100%;">Roll d10</button>
+                <div class="result-box" id="complication-result">
+                    <div class="roll-value" id="complication-roll">-</div>
+                    <div class="roll-interpretation" id="complication-interpretation"></div>
+                </div>
+                <div class="table-container">
+                    <button class="table-toggle" onclick="toggleTable('complication-table')">View Full Complications Table <span>▼</span></button>
+                    <div class="table-content" id="complication-table">
+                        <p style="color: var(--primary-gold); margin-bottom: 15px; font-weight: bold;">Loading complications table...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STELLAR DIE (SKILL CHECKS) -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">◆</div>
+                    <div class="card-title">The Stellar Die (d6)</div>
+                </div>
+                <p style="margin-bottom: 15px; color: var(--text-light); opacity: 0.9;">For important skill checks and narrative tension</p>
+                <button onclick="rollStellarDie()" style="width: 100%;">Roll d6</button>
+                <div class="result-box" id="stellar-die-result">
+                    <div class="roll-value" id="stellar-die-roll">-</div>
+                    <div class="roll-interpretation" id="stellar-die-interpretation"></div>
+                </div>
+                <div class="stellar-die-info">
+                    <div class="die-result complication">
+                        <div class="die-label">1-2</div>
+                        <div class="die-outcome">Complication</div>
+                    </div>
+                    <div class="die-result clean">
+                        <div class="die-label">3-4</div>
+                        <div class="die-outcome">Clean</div>
+                    </div>
+                    <div class="die-result opportunity">
+                        <div class="die-label">5-6</div>
+                        <div class="die-outcome">Opportunity</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK REFERENCE -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">Quick Reference</div>
+                </div>
+                <div class="instruction-grid" style="margin-top: 0;">
+                    <div class="instruction-item" style="grid-column: 1 / -1;">
+                        <div class="instruction-label">When to Use the Stellar Die</div>
+                        <div class="instruction-text"><strong>Always:</strong> Character goals, critical story beats, confrontations with named NPCs, moral choices<br><br><strong>Consider:</strong> Creative solutions, character motivations, key combat moments (~33%), investigations<br><br><strong>Never:</strong> Routine operations, shopping, low-stakes interactions, obvious answers</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-label">Opportunity (5-6)</div>
+                        <div class="instruction-text">Grant advantage, gain Power, critical hit, discover info, beneficial circumstance, reduce cost/time</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-label">Complication (1-2)</div>
+                        <div class="instruction-text">Enemy advantage, lose Power, detrimental circumstance, attract attention, trigger alert, complication</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="aria-quote">"In the void between stars, every choice echoes. Some bring light. Some bring shadow. All bring story."</div>
+        <p>ARIA, Ship AI and Surprisingly Philosophical Observer</p>
+    </footer>
+
+    <script>
+        // Game data
+        const gameData = {
+            1: { // Early Campaign
+                stellarCall: {
+                    '1-2': 'Nothing. No sensation. The jump is clear.',
+                    '3-5': 'Whispers. A subtle pull or sensation. Easy to dismiss or interpret as instinct. No crew pressure.',
+                    '6-7': 'Hard to ignore. The character feels genuine compulsion. They know something is pulling them. Creates tension in crew dynamics.',
+                    '8': 'Overwhelming. Rare and significant. Visceral and intense, dominates thinking, demands attention and disrupts plans. But direction/purpose remains unclear.'
+                },
+                randomEncounters: {
+                    1: 'Derelict Ship - Upscale vessel with signs of forced evacuation. No clear threat detected.',
+                    2: 'Distress Signal - SOS from unidentified source. Encryption standard commercial grade.',
+                    3: 'Merchant Vessel - Independent trader with standard cargo manifest. Wary but professional.',
+                    4: 'Pirate Contact - Raiders with basic equipment. Easy to evade or negotiate with.',
+                    5: 'Asteroid Field - Debris scattered randomly. Navigation challenging but manageable.',
+                    6: 'Stranded Crew - Life pods with survivors needing rescue. Straightforward situation.',
+                    7: 'Alien Vessel - Non-Concordat ship appears inert or makes slow approach.',
+                    8: 'Corporate Fleet - Harmonium or megacorp vessels conducting routine business.',
+                    9: 'Mysterious Signal - Beacon close enough to investigate. Unknown origin.',
+                    10: 'Salvage Opportunity - Floating cargo containers. Easy pickup if they are quick.',
+                    11: 'Environmental Phenomenon - Solar flare, radiation storm. Navigable with care.',
+                    12: 'Ancient Structure - Pre-Concordat ruins or object. Intriguing and possibly valuable.',
+                    13: 'Biological Entity - Massive creature or swarm. Appears unaware of ship.',
+                    14: 'Energy Phenomenon - Localized discharge, plasma storm. Beautiful and dangerous.',
+                    15: 'Lost Probe - Drifting automated system, still partially functional.',
+                    16: 'Refugee Pods - Multiple pods with civilians fleeing. Limited supplies, desperate.',
+                    17: 'Black Market Contact - Smuggler ship recognized. Offers to trade information or goods.',
+                    18: 'Scientific Expedition - Research vessel conducting surveys. Curious about Aurora.',
+                    19: 'Temporal Anomaly - Localized time distortion. Pass through, time feels odd.',
+                    20: 'Rogue AI - Derelict station with active AI making erratic broadcasts.'
+                }
+            },
+            2: { // Mid Campaign
+                stellarCall: {
+                    '1-2': 'Whisper. A subtle pull or sensation. Easy to dismiss or interpret as instinct. No crew pressure.',
+                    '3-5': 'Present. Noticeable sensation. Distinct pull with a vague sense of direction or meaning. Interpretable but undeniable. Creates conversation.',
+                    '6-7': 'Insistent. Hard to ignore. Genuine compulsion felt. Unmistakably the Call pulling at them. Creates significant tension in crew dynamics.',
+                    '8': 'Overwhelming. Intense, dominates thinking, demands immediate attention. Starting to feel more pointed—hints of purpose begin to crystallize.'
+                },
+                randomEncounters: {
+                    1: 'Derelict Ship - Computer logs hint at something *inside* forcing abandonment. Still not clear what.',
+                    2: 'Distress Signal - SOS changes pattern and language mid-transmission. Encryption is military grade.',
+                    3: 'Merchant Vessel - Cargo manifest does not match actual hold. They are nervous. Offer payment for silence.',
+                    4: 'Pirate Contact - Well-equipped raiders with tactical formation. Know Aurora\'s reputation. Want to parley.',
+                    5: 'Asteroid Field - Contains debris from multiple ships, ages spanning centuries. Recent wreckage visible.',
+                    6: 'Stranded Crew - From military or corporate vessel. Reluctant to explain abandonment. Rescue might create bigger problems.',
+                    7: 'Alien Vessel - Intelligent species with clear agenda. Makes demands or warnings. Difficult communication.',
+                    8: 'Corporate Fleet - Task force with obvious tension and recent combat signs. Could conscript Aurora.',
+                    9: 'Mysterious Signal - Beacon matching known Guardian signatures. Ancient origins suggest Guardian activity.',
+                    10: 'Salvage Opportunity - High-value cargo, suspiciously intact. Sensor ghost suggests abandonment, not accident. Trap?',
+                    11: 'Environmental Phenomenon - Exotic energy creating strange effects on crew. Brief hallucinations or temporal displacement.',
+                    12: 'Ancient Structure - Guardian station or alien monument, partially active. Emits strange signals.',
+                    13: 'Biological Entity - Intelligent creature or engineered organism. Appears to observe Aurora specifically.',
+                    14: 'Energy Phenomenon - Artificial or controlled discharge. Too precise to be natural. Someone experimenting.',
+                    15: 'Lost Probe - Sophisticated automated system with encrypted logs. Decryption hints at classified research.',
+                    16: 'Refugee Pods - Thousands of pods from destroyed habitat. Impossible to save everyone. Choose who to help.',
+                    17: 'Black Market Contact - Smuggler with dangerous cargo. Job offer with serious legal consequences.',
+                    18: 'Scientific Expedition - Research team studying hyperspace or aliens. Their discoveries hint at hidden things.',
+                    19: 'Temporal Anomaly - Time distortion affecting objects differently. Crew experiences visions of multiple timelines.',
+                    20: 'Rogue AI - Intelligent AI running Guardian facility, isolated for years. Could be ally or threat.'
+                }
+            },
+            3: { // Late Campaign
+                stellarCall: {
+                    '1-2': 'Whisper. A subtle pull or sensation. Easy to dismiss or interpret as instinct. No crew pressure.',
+                    '3-5': 'Present. Noticeable sensation. Distinct pull with clearer sense of direction. Creates conversation and minor pressure.',
+                    '6-7': 'Insistent. Unmistakable compulsion. The Call pulls toward something specific—a location, person, event. Demands action.',
+                    '8': 'Overwhelming. A specific destination, person, artifact, or mystery point surfaces with absolute clarity. This IS the next chapter of their journey.'
+                },
+                randomEncounters: {
+                    1: 'Derelict Ship - Wreckage carrying signatures matching *their* future or alternate timeline. Warning.',
+                    2: 'Distress Signal - SOS from crew member\'s *past*. Someone they thought dead. Impossible but undeniable.',
+                    3: 'Merchant Vessel - Black market connections to conspiracy they uncovered. Offers alliance or threatens exposure.',
+                    4: 'Pirate Contact - Raiders working for opposing faction. Pitched battle or negotiation. Victory has political ripples.',
+                    5: 'Asteroid Field - Graveyard of ships destroyed by something alive. Guardian weapons or Touched entity signatures.',
+                    6: 'Stranded Crew - Remnants of expedition seeking same mysteries. Alliance or competition? Information changes everything.',
+                    7: 'Alien Vessel - Non-Concordat species with hyperspace knowledge. They know about the Stellar Call.',
+                    8: 'Corporate Fleet - Megacorp armada chasing Aurora or same target. Direct confrontation determines political landscape.',
+                    9: 'Mysterious Signal - Beacon identical to ones encountered before. They are *converging*. Signal points to catalyst event.',
+                    10: 'Salvage Opportunity - Wreckage of previous expedition pursuing same mysteries. Their final logs explain what happened.',
+                    11: 'Environmental Phenomenon - Reality distortion hinting at true nature of spacetime. Crew experiences profound revelation.',
+                    12: 'Ancient Structure - Full Guardian facility, active and *aware*. First direct contact with what has been watching them.',
+                    13: 'Biological Entity - Touched individual or Forged evolution. Crew member recognizes themselves in what this is becoming.',
+                    14: 'Energy Phenomenon - Manufactured by the entity behind everything. Deliberate message or challenge.',
+                    15: 'Lost Probe - Ancient probe revealing Guardians are *contained*. Someone is keeping them sealed.',
+                    16: 'Refugee Pods - Survivors of catastrophe caused by crew\'s earlier choices. Consequences made manifest.',
+                    17: 'Black Market Contact - Agent for conspiracy or resistance. Represents final choice: which side will Aurora join?',
+                    18: 'Scientific Expedition - Team sent by major faction to stop or assist Aurora. Betrayal or vindication.',
+                    19: 'Temporal Anomaly - Crew witnesses own death or victory in alternate timeline. Prophecy or paradox?',
+                    20: 'Rogue AI - Entity representing will of something vast and ancient. Final negotiation or test. Acceptance or refusal.'
+                }
+            }
+        };
+
+        const hyperspacePhenomena = {
+            A1: { // Early, 3-5
+                1: 'Temporal Echo - Faint sensor ghost of another ship bleeding across time.',
+                2: 'Color Shift - Hyperspace shifts to strange, beautiful hues. Unsettling.',
+                3: 'Frequency Hum - Persistent sound at edge of hearing. Systems vibrate in resonance.',
+                4: 'Gravitational Anomaly - Mild drift. Ship slides slightly off course. Easily corrected.',
+                5: 'Time Distortion - Jump takes noticeably longer or shorter. No danger, just odd.',
+                6: 'Hyperspace Luminescence - Space glows with bioluminescent quality.',
+                7: 'Spatial Geometry - Corridors and distances seem subtly wrong. Disorienting.',
+                8: 'Memory Echo - Crew briefly remembers events that did not happen on ship. Fades quickly.',
+                9: 'Void Resonance - Hull vibrates in harmony with something external. Stops on own.',
+                10: 'Static Interference - Sensors pick up patterns that do not decode. Ghost signals.',
+                11: 'Thermal Gradient - Inexplicable warm or cold spot. Localized.',
+                12: 'Vast Presence - Crew experiences subliminal sense of something enormous nearby. Not threatening.'
+            },
+            A2: { // Mid, 3-5
+                1: 'Temporal Echo - Ghost of another ship becomes clearer. Its trajectory crosses theirs.',
+                2: 'Color Shift - Hues correspond to emotional state of crew. Beautiful but revealing.',
+                3: 'Frequency Hum - Pitch changes subtly in response to crew decisions. Synchronized.',
+                4: 'Gravitational Anomaly - Drift corrects itself automatically. Eerie precision.',
+                5: 'Time Distortion - Jump time matches exactly what someone aboard needed. Coincidence?',
+                6: 'Hyperspace Luminescence - Bioluminescence spells vague patterns in space. Almost like language.',
+                7: 'Spatial Geometry - Distances rearrange. Crew finds shortcuts or unexpected passages.',
+                8: 'Memory Echo - Memories are not random. They all relate to some distant event. Pattern.',
+                9: 'Void Resonance - Harmonic reaches a peak. Something vast seems aware of them.',
+                10: 'Static Interference - Patterns almost decode. Close. So close.',
+                11: 'Thermal Gradient - Temperature matches someone aboard\'s body temperature exactly.',
+                12: 'Vast Presence - Presence does not move. They feel its *gaze*.'
+            },
+            A3: { // Late, 3-5
+                1: 'Temporal Echo - Ghost is their own ship in alternate timeline. Still jumping. Still running.',
+                2: 'Color Shift - Hues form images. Warnings or prophecies. Crew recognizes symbols from early jumps.',
+                3: 'Frequency Hum - Song. A melody. Crew realizes they heard it before, when Call was strongest.',
+                4: 'Gravitational Anomaly - Curves space in pattern matching coordinates crew has been seeking.',
+                5: 'Time Distortion - Jump takes exactly as long as they have left before everything ends.',
+                6: 'Hyperspace Luminescence - Patterns spell coordinates. Next location. They knew.',
+                7: 'Spatial Geometry - Space folds. Reveals glimpse of origin. Of source. Of why.',
+                8: 'Memory Echo - All crew members experience same memory. Event never happened. Premonition.',
+                9: 'Void Resonance - Harmonic peaks in crescendo. Presence *speaks*. Message received.',
+                10: 'Static Interference - Patterns decode fully. Ancient signal. Older than Concordat.',
+                11: 'Thermal Gradient - Warmth from location only crew member knows exists.',
+                12: 'Vast Presence - Presence pulls at them. *Come*, it says. *Come and understand*.'
+            },
+            B1: { // Early, 6-7
+                1: 'Spatial Fracture - Hyperspace splits. Vision of two realities. Disorientation.',
+                2: 'Sensory Overload - All senses amplified. Pain, light, sound. Overwhelms crew.',
+                3: 'Gravity Spike - Sudden crush of pressure. Damage to ship. Alarms sound.',
+                4: 'Temporal Slip - Crew ages or de-ages briefly. Harmless but terrifying.',
+                5: 'Entity Shadow - Shape moves at periphery of sensors. Chasing? Curious?',
+                6: 'Signal Scream - Transmission hijacks all comms. Static and screams mixed.',
+                7: 'Course Deviation - Jump vector shifted. Not dangerous but unexpected. Why?',
+                8: 'Crew Psychosis - One crew member briefly insane. Sees things. Gone quickly.',
+                9: 'System Resonance - Ship\'s systems begin feedback loop. Controlled shutdown required.',
+                10: 'Memory Bleed - Crew swaps memories briefly. Confusing. Distressing.',
+                11: 'Void Touch - Hull briefly feels cold. Frost forms on surfaces.',
+                12: 'Compulsion - One crew member walks to airlock. Cannot explain. Snaps back.'
+            },
+            B2: { // Mid, 6-7
+                1: 'Spatial Fracture - Multiple realities visible. Crew sees themselves making different choices.',
+                2: 'Sensory Overload - Empaths or sensitives overwhelmed. Emotions of something vast pour through.',
+                3: 'Gravity Spike - Weapon discharge from before crystallizes in hyperspace. Damage real and severe.',
+                4: 'Temporal Slip - Crew ages/de-ages matching life they save or ended. Meaningful.',
+                5: 'Entity Shadow - Shape has form now. Recognizable but impossible. Former contact? Dead ally?',
+                6: 'Signal Scream - Transmission decodes to warning. *Something follows you. Something hunts.*',
+                7: 'Course Deviation - Jump destination shifted toward location crew has been seeking.',
+                8: 'Crew Psychosis - Possessed crew member speaks in voice not their own. Knowledge they should not have.',
+                9: 'System Resonance - Ship overcomes feedback. But crew realizes it *wanted* to.',
+                10: 'Memory Bleed - Shared memories of someone else\'s life. Someone important. Someone connected.',
+                11: 'Void Touch - Frostbite appears on crew member. Stays. Heals slowly over days.',
+                12: 'Compulsion - Multiple crew toward airlock. Fighting it. Almost break through.'
+            },
+            B3: { // Late, 6-7
+                1: 'Spatial Fracture - All realities collapse into one. This one. The one they chose.',
+                2: 'Sensory Overload - Crew experiences all Stellar Calls simultaneously. Every crew member. Every jump.',
+                3: 'Gravity Spike - Weapon discharge solidifies. Ship of enemy faction materializes. Battle imminent.',
+                4: 'Temporal Slip - Aging/de-aging matches timeline. This is when they were supposed to arrive.',
+                5: 'Entity Shadow - Shape is Guardian. Sleeping. Dreams bleeding through. It stirs.',
+                6: 'Signal Scream - Transmission from itself. From future. *You did not stop it. But you can.*',
+                7: 'Course Deviation - Forced toward convergence point. All threads lead here. Now.',
+                8: 'Crew Psychosis - Possessed crew member reveals truth they have been suppressing. Choice clarifies.',
+                9: 'System Resonance - Ship and crew synchronize with something vast. Partnership or assimilation?',
+                10: 'Memory Bleed - They remember being someone else. The person behind everything. The source.',
+                11: 'Void Touch - Frostbite spreads. Mark of something. Coat of armor or badge of doom?',
+                12: 'Compulsion - All crew at airlock. Door opens to star field. But the star is *looking at them*.'
+            },
+            C1: { // Early, 8
+                1: 'Entity Contact - Vast intelligence becomes aware. Does not respond. Waits.',
+                2: 'Stellar Eruption - Hyperspace convulses. Like birth. Something waking.',
+                3: 'Signal Harmonic - All wavelengths synchronize to one frequency. One message. *I am here.*',
+                4: 'Void Barrier - Jump path forward closes. Only backward. Escape possible. Only choice left.',
+                5: 'Psychic Storm - Crew minds touched by chaos. Vision of cosmos vast and old and hungry.',
+                6: 'Manifest Form - Something takes shape from hyperspace itself. Crew sees it. Cannot unsee it.',
+                7: 'Time Collapse - Past and future compress to present. All moments. Now.',
+                8: 'Source Pulse - Feeling originates from specific direction. From Stellar Call origin. Unmistakable.',
+                9: 'Archive Access - Ancient knowledge floods consciousness. Too much. Crew reels from revelation.',
+                10: 'Boundary Breach - Barrier between dimensions fractures. Something reaches through.',
+                11: 'Convergence - All previous phenomena converge. Every sensation. Every omen. Here. Together.',
+                12: 'Calling - The Call reaches crescendo. Pull becomes impossible to ignore. *Come. Come now. Come home.*'
+            },
+            C2: { // Mid, 8
+                1: 'Entity Contact - Guardian intelligence awakens. Notices Aurora. Takes interest. Dangerous.',
+                2: 'Stellar Eruption - Hyperspace tears open. Wound that should not exist. Still bleeding.',
+                3: 'Signal Harmonic - Message becomes clear. *This ship was chosen. This crew was marked.*',
+                4: 'Void Barrier - Forward path blocked deliberately. Not accident. Someone or something *chose* this.',
+                5: 'Psychic Storm - Psyche touched reveals: they are part of something larger. Chain in mechanism.',
+                6: 'Manifest Form - Shape has detail now. Mouth. Eyes. It *watches them*.',
+                7: 'Time Collapse - Crew experiences moments they will face. Some die. Some ascend. Choice matters.',
+                8: 'Source Pulse - Direction becomes specific. Location. Coordinates matching previous encounters.',
+                9: 'Archive Access - Knowledge reveals conspiracy layers. Harmonium and Guardians connected. Deeper.',
+                10: 'Boundary Breach - Something climbs through tear. Partially. Not fully. Warning?',
+                11: 'Convergence - All mysteries weave into one thread. Pull them forward.',
+                12: 'Calling - *You have been expected. Come. Let me show you what you truly are.*'
+            },
+            C3: { // Late, 8
+                1: 'Entity Contact - Guardian acknowledges Aurora. Communication established. It offers choice.',
+                2: 'Stellar Eruption - Multiple hyperspace wounds open. Fleet emerging. Armada of something *old*.',
+                3: 'Signal Harmonic - Message decodes fully. *The Guardians have been called. War begins. Choose your side.*',
+                4: 'Void Barrier - All paths blocked except one. Forward to source. No escape. No choice.',
+                5: 'Psychic Storm - Crew realizes they are catalyst. Their choices trigger apocalypse or salvation.',
+                6: 'Manifest Form - Guardian takes full shape. Beautiful and terrible. Says: *Inherit or burn.*',
+                7: 'Time Collapse - Future branches. Aurora sees all possibilities. All consequences. All deaths. All glories.',
+                8: 'Source Pulse - Source location revealed. The Stellar Call originates from *inside the Concordat*. Betrayal.',
+                9: 'Archive Access - Ancient truth: Concordat government suppressed Guardian awakening intentionally. Why?',
+                10: 'Boundary Breach - Touched individuals pour through tear. Thousands. Humanity reimagined. Choice?',
+                11: 'Convergence - Every thread braids into destiny. Crew\'s choice is final choice. Universe listens.',
+                12: 'Calling - *I am the source. I am the root. I am the truth beneath all things. Join me or oppose me. But you cannot ignore me.*'
+            }
+        };
+
+        const shipComplications = {
+            1: 'Reactor Stress - Tension in coolant lines. Ship operates at 80% capacity until repairs.',
+            2: 'Navigation Drift - Autopilot off-calibration. Needs realignment before next jump.',
+            3: 'Power Fluctuation - Lights flicker. Inconsistent power to non-essential systems.',
+            4: 'Comms Interference - Transmission clarity reduced. Long-range communications spotty.',
+            5: 'Hull Micro-Fracture - Hairline crack. Minor leak. Visible but manageable.',
+            6: 'Thruster Misalignment - Lateral thrust vector off. Maneuvering sluggish.',
+            7: 'Life Support Sensor Failure - System works but monitoring disabled. Crew must check manually.',
+            8: 'Cargo Bay Door Jam - One lock mechanism stuck. Access limited until repair.',
+            9: 'Computer Glitch - Random system resets. Nothing critical but disorienting.',
+            10: 'Hyperspace Drive Capacitor - Charge efficiency down to 70%. Jumps still possible, slower buildup.'
+        };
+
+        let crewRolls = {};
+
+        function roll(sides) {
+            return Math.floor(Math.random() * sides) + 1;
+        }
+
+        function rollStellarCall() {
+            const phase = document.getElementById('campaign-phase').value;
+            const crewMember = document.getElementById('crew-member').value;
+            const result = roll(8);
+            
+            const interpretation = gameData[phase].stellarCall;
+            const intensity = result <= 2 ? '1-2' : result >= 3 && result <= 5 ? '3-5' : result >= 6 && result <= 7 ? '6-7' : '8';
+            
+            crewRolls[crewMember] = { result, intensity, phase };
+            
+            document.getElementById('stellar-roll').textContent = result;
+            document.getElementById('stellar-interpretation').textContent = interpretation[intensity];
+            document.getElementById('stellar-result').classList.add('active');
+            
+            updateCrewTracker();
+        }
+
+        function updateCrewTracker() {
+            const crews = ['Nathanial', 'OD', 'Kael', 'ARIA'];
+            let html = '';
+            
+            crews.forEach(crew => {
+                const roll = crewRolls[crew];
+                const className = roll ? 'crew-member' : 'crew-member';
+                const matchClass = roll ? (roll.result === 8 || roll.result >= 6 && roll.result <= 7 || roll.result >= 3 && roll.result <= 5 ? 'matched' : '') : '';
+                
+                html += `
+                    <div class="crew-member ${matchClass}">
+                        <div class="crew-name">${crew}</div>
+                        <div class="crew-roll">${roll ? roll.result : '--'}</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('crew-tracker').innerHTML = html;
+        }
+
+        function rollHyperspacePhenomena() {
+            const intensity = document.getElementById('phenomena-intensity').value;
+            const phase = document.getElementById('campaign-phase').value;
+            const result = roll(12);
+            
+            const key = `${intensity}${phase}`;
+            const table = hyperspacePhenomena[key];
+            const interpretation = table[result] || 'Unknown phenomenon.';
+            
+            document.getElementById('phenomena-roll').textContent = result;
+            document.getElementById('phenomena-interpretation').textContent = interpretation;
+            document.getElementById('phenomena-result').classList.add('active');
+        }
+
+        function rollRandomEncounter() {
+            const phase = document.getElementById('campaign-phase').value;
+            const result = roll(20);
+            
+            const interpretation = gameData[phase].randomEncounters[result];
+            
+            document.getElementById('encounter-roll').textContent = result;
+            document.getElementById('encounter-interpretation').textContent = interpretation;
+            document.getElementById('encounter-result').classList.add('active');
+        }
+
+        function rollShipComplication() {
+            const result = roll(10);
+            const interpretation = shipComplications[result];
+            
+            document.getElementById('complication-roll').textContent = result;
+            document.getElementById('complication-interpretation').textContent = interpretation;
+            document.getElementById('complication-result').classList.add('active');
+        }
+
+        function rollStellarDie() {
+            const result = roll(6);
+            let outcome, interpretation;
+            
+            if (result <= 2) {
+                outcome = 'Complication';
+                interpretation = 'Something goes wrong narratively. Enemy gains advantage, crew loses Power, detrimental circumstance, unwanted attention, or story complication. Works in success or failure.';
+            } else if (result <= 4) {
+                outcome = 'Clean Result';
+                interpretation = 'No additional narrative effect. The roll determines outcome as normal. Neither good nor bad fortune adds to the story.';
+            } else {
+                outcome = 'Opportunity';
+                interpretation = 'Something goes right narratively. Grant advantage, gain Power, critical hit, discover information, beneficial circumstance, or unexpected help. Works in success or failure.';
+            }
+            
+            document.getElementById('stellar-die-roll').textContent = result;
+            document.getElementById('stellar-die-interpretation').textContent = `${outcome}: ${interpretation}`;
+            document.getElementById('stellar-die-result').classList.add('active');
+        }
+
+        function toggleTable(tableId) {
+            const content = document.getElementById(tableId);
+            const toggle = event.target.closest('.table-toggle');
+            
+            content.classList.toggle('active');
+            toggle.classList.toggle('active');
+            
+            if (content.classList.contains('active')) {
+                loadTableContent(tableId);
+            }
+        }
+
+        function loadTableContent(tableId) {
+            let html = '';
+            
+            if (tableId === 'stellar-table') {
+                const phase = document.getElementById('campaign-phase').value;
+                const stellarData = gameData[phase].stellarCall;
+                
+                html = '<table>';
+                html += '<tr><td>1-2</td><td>' + stellarData['1-2'] + '</td></tr>';
+                html += '<tr><td>3-5</td><td>' + stellarData['3-5'] + '</td></tr>';
+                html += '<tr><td>6-7</td><td>' + stellarData['6-7'] + '</td></tr>';
+                html += '<tr><td>8</td><td>' + stellarData['8'] + '</td></tr>';
+                html += '</table>';
+            } else if (tableId === 'phenomena-table') {
+                const phase = document.getElementById('campaign-phase').value;
+                const intensity = document.getElementById('phenomena-intensity').value;
+                const key = `${intensity}${phase}`;
+                const table = hyperspacePhenomena[key];
+                
+                html = '<table>';
+                for (let i = 1; i <= 12; i++) {
+                    html += `<tr><td>${i}</td><td>${table[i]}</td></tr>`;
+                }
+                html += '</table>';
+            } else if (tableId === 'encounter-table') {
+                const phase = document.getElementById('campaign-phase').value;
+                const encounters = gameData[phase].randomEncounters;
+                
+                html = '<table>';
+                for (let i = 1; i <= 20; i++) {
+                    html += `<tr><td>${i}</td><td>${encounters[i]}</td></tr>`;
+                }
+                html += '</table>';
+            } else if (tableId === 'complication-table') {
+                html = '<table>';
+                for (let i = 1; i <= 10; i++) {
+                    html += `<tr><td>${i}</td><td>${shipComplications[i]}</td></tr>`;
+                }
+                html += '</table>';
+            }
+            
+            document.getElementById(tableId).innerHTML = html;
+        }
+
+        function updatePhaseInfo() {
+            const phase = document.getElementById('campaign-phase').value;
+            let info = '';
+            
+            if (phase === '1') {
+                info = 'Early Campaign selected. Stellar Call is vague and easy to dismiss. Encounters are straightforward. Introduce mystery gradually.';
+            } else if (phase === '2') {
+                info = 'Mid Campaign selected. Stellar Call shows direction hints. Encounters grow complex and faction-aware. Build toward revelations.';
+            } else {
+                info = 'Late Campaign selected. Stellar Call targets specific locations and mysteries. Encounters tie into core conspiracies. Truth surfaces.';
+            }
+            
+            document.getElementById('phase-info').textContent = info;
+        }
+
+        // Event listeners
+        document.getElementById('campaign-phase').addEventListener('change', updatePhaseInfo);
+
+        // Initialize
+        updateCrewTracker();
+        updatePhaseInfo();
+    </script>
+</body>
+</html>
